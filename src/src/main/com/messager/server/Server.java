@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class Server {
-    private static final Map<String, User> online = new HashMap<>(); // Используем Map<String, User>
+    private static final Map<String, User> online = new HashMap<>();
 
     // Класс для проверки порта
     public static class PortCheck {
@@ -49,6 +49,7 @@ public class Server {
     // Обработчик клиента
     public static class ClientHandler implements Runnable {
         private Socket clientSocket;
+        private String username; // Добавляем поле для хранения имени пользователя
 
         public ClientHandler(Socket clientSocket) {
             this.clientSocket = clientSocket;
@@ -58,6 +59,9 @@ public class Server {
         private void broadcast(String message) {
             synchronized (online) {
                 for (User user : online.values()) {
+                    if(user.getUsername().equals(username)) {
+                        continue;
+                    }
                     user.getWriter().println(message);
                 }
             }
@@ -78,7 +82,8 @@ public class Server {
 
                 // Регистрация пользователя
                 writer.println("Введите ваше имя:");
-                String username = reader.readLine();
+                username = reader.readLine();
+                System.out.println("Имя:"+username);
                 User user = new User(username, clientSocket, writer);
 
                 // Добавление пользователя в список
@@ -91,16 +96,16 @@ public class Server {
                 // Обработка сообщений
                 String inputLine;
                 while ((inputLine = reader.readLine()) != null) {
-                    System.out.println("Получено от " + username + ": " + inputLine);
-                    broadcast(username + ": " + inputLine);
+
+                    System.out.println("Получено от " + username + ": " + inputLine); // Исправлено
+                    broadcast("["+username+"]" + ": " + inputLine);
                 }
             } catch (IOException e) {
                 System.err.println("Ошибка при работе с клиентом: " + e.getMessage());
             } finally {
                 // Удаление пользователя при отключении
                 try {
-                    String username = ((User) online.get(clientSocket)).getUsername();
-                    remove(username);
+                    remove(username); // Исправлено
                     clientSocket.close();
                 } catch (IOException e) {
                     System.err.println("Ошибка при закрытии сокета: " + e.getMessage());
@@ -122,18 +127,17 @@ public class Server {
             if (PortCheck.checkPort(port)) {
                 correctPort = true;
             } else {
-                System.out.println("Этот порт занят попробуйте снова:");
+                System.out.println("Этот порт занят, попробуйте снова:");
             }
         }
 
         // Запуск сервера
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("Server started on port " + port);
+            System.out.println("Сервер запущен на порту: " + port);
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("Client connected with IP: " + clientSocket.getInetAddress().getHostAddress());
-
+                System.out.println("Пользователь подключился с IP: " + clientSocket.getInetAddress().getHostAddress());
 
                 new Thread(new ClientHandler(clientSocket)).start();
             }
