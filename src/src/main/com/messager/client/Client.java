@@ -1,5 +1,5 @@
 package src.main.com.messager.client;
-import java.io.Serializable;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
@@ -8,26 +8,6 @@ public class Client {
     private static volatile boolean isConnected = true;
 
 
-    class DataPacket implements Serializable {
-        private String fileName;
-        private long fileSize;
-        private byte[] data;
-
-        public DataPacket(String fileName, long fileSize, byte[] data) {
-            this.fileName = fileName;
-            this.fileSize = fileSize;
-            this.data = data;
-        }
-        public String getFileName() {
-            return fileName;
-        }
-        public long getFileSize() {
-            return fileSize;
-        }
-        public byte[] getData() {
-            return data;
-        }
-    }
 
     public static void Connect() {
         Scanner scanner = new Scanner(System.in);
@@ -39,7 +19,8 @@ public class Client {
 
         try (Socket socket = new Socket(ip, port);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-             PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+             ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream())) {
 
             System.out.println("Connected to Server " + ip + ":" + port);
 
@@ -57,7 +38,6 @@ public class Client {
                     System.out.println("Соединение с сервером разорвано.");
                 }
             }).start();
-
 
 
 

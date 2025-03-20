@@ -21,6 +21,8 @@ public class Server {
         }
     }
 
+
+
     // Класс для хранения информации о пользователе
     public static class User {
         private String username;
@@ -75,6 +77,7 @@ public class Server {
             broadcast(username + " покинул чат.");
         }
 
+
         @Override
         public void run() {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -99,6 +102,7 @@ public class Server {
 
                     System.out.println("Получено от " + username + ": " + inputLine); // Исправлено
                     broadcast("["+username+"]" + ": " + inputLine);
+
                 }
             } catch (IOException e) {
                 System.err.println("Ошибка при работе с клиентом: " + e.getMessage());
